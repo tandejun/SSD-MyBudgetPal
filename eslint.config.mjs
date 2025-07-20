@@ -11,11 +11,14 @@ pluginReact.configs.flat.recommended,
 {
 plugins: {
 security: pluginSecurity
+'no-unsanitized': noUnsanitized
 },
 rules: {
 ...pluginJs.configs.recommended.rules,
 ...pluginReact.configs.flat.recommended.rules,
 "security/detect-eval-with-expression": "error",
+'no-unsanitized/method': 'error',
+      'no-unsanitized/property': 'error'
 }
 }
 ];
