@@ -1,3 +1,2 @@
 node_modules/
-js/jquery.min.js
-lib/**/*.min.js
+static/vendor/
