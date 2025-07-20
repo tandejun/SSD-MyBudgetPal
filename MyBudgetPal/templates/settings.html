@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>MyBudgetPal : Settings</title>
+
+    {% include 'common/head.html' %}
+</head>
+
+<body class="dashboard">
+    {% include 'common/preloader.html' %}
+    <div id="main-wrapper">
+        {% include 'common/header.html' %}
+        {% include 'common/sidebar.html' %}
+        <div class="content-body">
+            <div class="container">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="page-title">
+                            <div class="row align-items-center justify-content-between">
+                                <div class="col-xl-4">
+                                    <div class="page-title-content">
+                                        <h3>Settings</h3>
+                                        <p class="mb-2">Welcome MyBudgetPal Finance Management</p>
+                                    </div>
+                                </div>
+                                <div class="col-auto">
+                                    <div class="breadcrumbs"><a href="#">Home </a>
+                                        <span><i class="fi fi-rr-angle-small-right"></i></span>
+                                        <a href="#">Settings</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-xxl-12 col-xl-12">
+                        <div class="settings-menu">
+                            <a href="{{ url_for('extras.settings') }}">Account</a>
+                            <a href="{{ url_for('auth.logged_in_reset_password')}}">Password Reset</a>
+                        </div>
+                        <div class="row">
+                            <div class="col-xxl-12 col-xl-12 col-lg-12">
+                                <div class="card ">
+                                    <div class="card-body">
+                                        <div class="welcome-profile">
+                                            <div class="d-flex align-items-center">
+                                                <img src="../static/images/avatar/user.png" alt="">
+                                                <div class="ms-3">
+                                                    <h4>Welcome, {{ username }}!</h4>
+                                                </div>
+                                            </div>
+                                            <ul>
+                                                <li><a href="#"><span class="verified"><i
+                                                                class="fi fi-bs-check"></i></span>Verify
+                                                        account</a></li>
+                                                <li>
+                                                    {% if totp_enabled %}
+                                                    <a href="{{ url_for('auth.disable_2fa') }}">
+                                                        <span class="verified">
+                                                            <i class="fi fi-bs-check"></i>
+                                                        </span>2FA Enabled (Click to Disable)
+                                                    </a>
+                                                    {% else %}
+                                                    <a href="{{ url_for('auth.setup_2fa') }}">
+                                                        <span class="not-verified">
+                                                            <i class="fi fi-rs-shield-check"></i>
+                                                        </span>Enable Two-Factor Authentication (2FA)
+                                                    </a>
+                                                    {% endif %}
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% include 'common/footer.html' %}
+    </div>
+    {% include 'common/scripts.html' %}
+</body>
+
+</html>

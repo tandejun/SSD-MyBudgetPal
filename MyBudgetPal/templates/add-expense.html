@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>MyBudgetPal : Add Expense</title>
+    
+    {% include 'common/head.html' %}
+
+    <script>
+        window.addEventListener('load', function() {
+            fetch('/add-expense', {
+                method: 'GET'
+            })
+            .then(response => response.json())
+            .then(data => {
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        });
+    </script>
+
+</head>
+
+<body class="dashboard">
+    <!-- {% if error_message %}
+        <div class="alert alert-danger">
+            {{ error_message }}
+        </div>
+    {% endif %} -->
+    <!-- {% if error_message %}
+    <script>
+        alert("{{ error_message }}");
+    </script>
+    {% endif %} -->
+    {% include 'common/preloader.html' %}
+    <div id="main-wrapper">
+        {% include 'common/header.html' %}
+        {% include 'common/sidebar.html' %}
+        <div class="content-body">
+            <div class="verification section-padding">
+                <div class="container h-100">
+                    <div class="row justify-content-center h-100 align-items-center">
+                        <div class="col-xl-5 col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h4 class="card-title">New Expense</h4>
+                                </div>
+                                <div class="card-body">
+                                    <form action="{{ url_for('expenses.add_expense') }}" method="POST">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                        <div class="row">
+                                            <div class="mb-3 col-xl-12">
+                                                <label class="form-label">Date </label>
+                                                <input type="date" class="form-control" placeholder="July 5th 2025" name="date" required>
+                                            </div>
+                                            <div class="mb-3 col-xl-12">
+                                                <label class="form-label">Amount </label>
+                                                <input type="text" class="form-control" placeholder="$35.23" name="amount" required>
+                                            </div>
+                                            <div class="mb-3 col-xl-12">
+                                                <label class="form-label">Category</label>
+                                                <select name="category" class="form-control" onchange="toggleCustomInput()" required>
+                                                    <option value="">Select Category</option>
+                                                    {% for category in categories %}
+                                                        <option value="{{ category.category }}">{{ category.category }}</option>
+                                                    {% endfor %}
+                                                    <option value="custom">+ Add New Category</option>
+                                                </select>
+                                            </div>
+
+                                            <!-- Custom Category Input -->
+                                            <div class="mb-3" id="customCategoryDiv" style="display: none;">
+                                                <label class="form-label">New Category Name</label>
+                                                <input type="text" class="form-control" name="custom_category" id="customCategoryInput" placeholder="Enter new category name">
+                                            </div>            
+
+                                            <div class="mb-3 col-xl-12">
+                                                <label class="form-label">Description </label>
+                                                <input type="text" class="form-control" placeholder="Enter a description" name="description" required>
+                                            </div>
+                                            <div class="mb-3 col-xl-12">
+                                                <label class="form-label">Payment Method</label>
+                                                <select class="form-control" name="method" required>
+                                                    <option value="">Select Payment Method</option>
+                                                    <option value="Cash">Cash</option>
+                                                    <option value="Debit Card">Debit Card</option>
+                                                    <option value="Credit Card">Credit Card</option>
+                                                    <option value="Bank Transfer">PayNow / Paylah</option>
+                                                    <option value="Other">Other</option>
+                                                </select>
+                                            </div>
+                                            <div class="mb-3 col-xl-12">
+                                                <label class="form-label">Share with Friends (optional)</label>
+                                                <div id="friend-dropdowns">
+                                                    <select name="share_with[]" class="form-select friend-dropdown" onchange="addFriendDropdown(this)">
+                                                        <option value="">-- Select a friend --</option>
+                                                        {% for friend in friends %}
+                                                            <option value="{{ friend.user_id }}">{{ friend.username }}</option>
+                                                        {% endfor %}
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="text-center col-12">
+                                                <button type="submit" class="btn btn-success w-100">Save</button>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% include 'common/footer.html' %}
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            window.toggleCustomInput = function() {
+                const select = document.querySelector('select[name="category"]');
+                const customDiv = document.getElementById('customCategoryDiv');
+                const customInput = document.getElementById('customCategoryInput');
+                
+                if (select.value === 'custom') {
+                    customDiv.style.display = 'block';
+                    customInput.required = true;
+                    customInput.focus();
+                } else {
+                    customDiv.style.display = 'none';
+                    customInput.required = false;
+                    customInput.value = '';
+                }
+            };
+
+            const friendsList = [
+                {% for friend in friends %}
+                    {id: "{{ friend.user_id }}", name: "{{ friend.username }}"},
+                {% endfor %}
+            ];
+
+            window.addFriendDropdown = function(selectElem) {
+                // Remove all dropdowns below the current one
+                const dropdowns = Array.from(document.querySelectorAll('.friend-dropdown'));
+                const idx = dropdowns.indexOf(selectElem);
+                dropdowns.slice(idx + 1).forEach(d => d.parentElement.remove());
+
+                // Gather all selected friend IDs up to and including this dropdown
+                const selectedIds = dropdowns.map(d => d.value).filter(v => v);
+
+                // Filter out already selected friends for the next dropdown
+                const availableFriends = friendsList.filter(f => !selectedIds.includes(f.id));
+
+                // Only add a new dropdown if there are still friends left to select
+                if (selectElem.value && availableFriends.length > 0) {
+                    const div = document.createElement('div');
+                    const select = document.createElement('select');
+                    select.name = "share_with[]";
+                    select.className = "form-select friend-dropdown";
+                    select.onchange = function() { addFriendDropdown(this); };
+
+                    const defaultOption = document.createElement('option');
+                    defaultOption.value = "";
+                    defaultOption.textContent = "-- Select a friend --";
+                    select.appendChild(defaultOption);
+
+                    availableFriends.forEach(friend => {
+                        const option = document.createElement('option');
+                        option.value = friend.id;
+                        option.textContent = friend.name;
+                        select.appendChild(option);
+                    });
+
+                    div.appendChild(select);
+                    document.getElementById('friend-dropdowns').appendChild(div);
+                }
+            };
+        });
+    </script>
+
+    {% include 'common/scripts.html' %}
+
+</body>
+
+</html>

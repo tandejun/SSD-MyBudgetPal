@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>MyBudgetPal : Upload Receipt Failed</title>
+
+    {% include 'common/head.html' %}
+</head>
+
+<body class="dashboard">
+    {% include 'common/preloader.html' %}
+    <div id="main-wrapper">
+        {% include 'common/header.html' %}
+        {% include 'common/sidebar.html' %}
+        <div class="content-body">
+            <div class="verification section-padding">
+                <div class="container h-100">
+                    <div class="row justify-content-center h-100 align-items-center">
+                        <div class="col-xl-5 col-md-6">
+                            <div class="card">
+                                <div class="card-body identity-content">
+                                    <form action="{{ url_for('dashboard.index') }}">
+                                        <span class="icon"><i class="fi fi-bs-cross-circle"></i></span>
+                                        <h4>We have failed to process your receipt!</h4>
+                                        <p>Please ensure that your receipt is readable and contains the following fields
+                                        </p>
+                                        <ul>
+                                            <li><strong>Date of purchase</strong></li>
+                                            <li><strong>Merchant name</strong></li>
+                                            <li><strong>Total amount</strong></li>
+                                        </ul>
+                                        <p>If the issue persists, you can still input your expense manually
+                                            <a href="{{ url_for('expenses.add_expense') }}">here</a>.
+                                        </p>
+                                        <div class="text-center">
+                                            <button type="submit" class="btn btn-success pl-5 pr-5">Continue</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% include 'common/footer.html' %}
+    </div>
+    {% include 'common/scripts.html' %}
+</body>
+
+</html>

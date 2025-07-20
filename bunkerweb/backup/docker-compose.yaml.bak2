@@ -1,0 +1,81 @@
+x-bw-env: &bw-env
+  # We use an anchor to avoid repeating the same settings for both services
+  API_WHITELIST_IP: "127.0.0.0/8 10.20.30.0/24" # Make sure to set the correct IP range so the scheduler can send the configuration to the instance
+  DATABASE_URI: "${DATABASE_URI}" # Remember to set a stronger password for the database
+
+services:
+  bunkerweb:
+    # This is the name that will be used to identify the instance in the Scheduler
+    image: bunkerity/bunkerweb:1.6.1
+    ports:
+      - "80:8080/tcp"
+      - "443:8443/tcp"
+      - "443:8443/udp" # For QUIC / HTTP3 support
+    environment:
+      <<: *bw-env # We use the anchor to avoid repeating the same settings for all services
+    restart: "unless-stopped"
+    networks:
+      - bw-universe
+      - bw-services
+
+  bw-scheduler:
+    image: bunkerity/bunkerweb-scheduler:1.6.1
+    user: "0:988"
+    environment:
+      <<: *bw-env
+      BUNKERWEB_INSTANCES: "bunkerweb" # Make sure to set the correct instance name
+      SERVER_NAME: "dogzhiyi.chickenkiller.com"
+      MULTISITE: "yes"
+      UI_HOST: "http://bw-ui:7000" # Change it if needed
+      dogzhiyi.chickenkiller.com_USE_REVERSE_PROXY: "yes"
+      dogzhiyi.chickenkiller.com_REVERSE_PROXY_URL: "/"
+      dogzhiyi.chickenkiller.com_REVERSE_PROXY_HOST: "http://web:5000"
+      USE_CUSTOM_SSL: "yes"
+      CUSTOM_SSL_CERT_PRIORITY: "file"
+      CUSTOM_SSL_CERT: "/certs/fullchain.pem"
+      CUSTOM_SSL_KEY: "/certs/privkey.pem"
+    volumes:
+      - bw-storage:/data # This is used to persist the cache and other data like the backups
+      - ./ssl:/certs:ro
+    restart: "unless-stopped"
+    networks:
+      - bw-universe
+      - bw-db
+
+  bw-ui:
+    image: bunkerity/bunkerweb-ui:1.6.1
+    environment:
+      <<: *bw-env
+    restart: "unless-stopped"
+    networks:
+      - bw-universe
+      - bw-db
+
+  bw-db:
+    image: mariadb:11
+    environment:
+      MYSQL_RANDOM_ROOT_PASSWORD: "yes"
+      MYSQL_DATABASE: "db"
+      MYSQL_USER: "bunkerweb"
+      MYSQL_PASSWORD: "${MYSQL_PASSWORD}" # Remember to set a stronger password for the database
+    volumes:
+      - bw-data:/var/lib/mysql
+    restart: "unless-stopped"
+    networks:
+      - bw-db
+
+volumes:
+  bw-data:
+  bw-storage:
+
+networks:
+  bw-universe:
+    name: bw-universe
+    ipam:
+      driver: default
+      config:
+        - subnet: 10.20.30.0/24 # Make sure to set the correct IP range so the scheduler can send the configuration to the instance
+  bw-services:
+    name: bw-services
+  bw-db:
+    name: bw-db

@@ -1,0 +1,65 @@
+name: Deploy to EC2
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Copy project files to EC2
+        run: |
+          rsync -avz \
+            --exclude '.git' \
+            --exclude '.github' \
+            --exclude '.gitignore' \
+            --exclude '.gitattributes' \
+            --exclude 'README.md' \
+            --exclude 'nginx/certbot/conf/accounts/' \
+            -e "ssh -i ~/.ssh/id_rsa" \
+            ./MyBudgetPal/ ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/home/${{ secrets.EC2_USER }}/MyBudgetPal
+
+      - name: Run Docker Compose on EC2
+        run: |
+          ssh -i ~/.ssh/id_rsa ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << EOF
+            cd /home/${{ secrets.EC2_USER }}/MyBudgetPal
+
+            # Generate .env file from GitHub Secrets
+            cat <<EOT > .env
+            FLASK_ENV=production
+            MYSQL_HOST=db
+            MYSQL_PORT=3306
+            MYSQL_DB_NAME=${{ secrets.MYSQL_DB_NAME }}
+            MYSQL_USER=${{ secrets.MYSQL_USER }}
+            MYSQL_PASSWORD=${{ secrets.MYSQL_PASSWORD }}
+            MYSQL_ROOT_PASSWORD=${{ secrets.MYSQL_ROOT_PASSWORD }}
+            SECRET_KEY=${{ secrets.SECRET_KEY }}
+            GOOGLE_API_KEY=${{ secrets.GOOGLE_API_KEY }}
+            GOOGLE_SITE_KEY=${{ secrets.GOOGLE_SITE_KEY }}
+            GOOGLE_SECRET_KEY=${{ secrets.GOOGLE_SECRET_KEY }}
+            WTF_CSRF_SECRET_KEY=${{ secrets.WTF_CSRF_SECRET_KEY }}
+            MAILGUN_API_KEY=${{ secrets.MAILGUN_API_KEY }}
+            MAILGUN_DOMAIN=${{ secrets.MAILGUN_DOMAIN }}
+            BWUI_REVERSE_PROXY_URL=${{ secrets.BWUI_REVERSE_PROXY_URL }}
+            BWUI_ADMIN_PASSWORD=${{ secrets.BWUI_ADMIN_PASSWORD }}
+            BWUI_ADMIN_USERNAME=${{ secrets.BWUI_ADMIN_USERNAME }}
+            BWUI_DATABASE_URI=${{ secrets.BWUI_DATABASE_URI }}
+            BWUI_MYSQL_PASSWORD=${{ secrets.BWUI_MYSQL_PASSWORD }}
+            LOG_DIR=${{ secrets.LOG_DIR }}
+          EOT
+
+          # Rebuild and restart containers
+          docker-compose up -d --build
+          EOF

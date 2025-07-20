@@ -1,0 +1,17 @@
+<!-- Favicon icon -->
+<link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='images/favicon.ico') }}">
+
+<!-- Custom Stylesheet -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='vendor/toastr/toastr.min.css') }}">
+
+<!-- reCAPTCHA v3 Loader -->
+<meta name="recaptcha-site-key" content="{{ site_key }}">
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+{% for category, message in messages %}
+<div class="alert alert-{{ category }}">{{ message }}</div>
+{% endfor %}
+{% endif %}
+{% endwith %}

@@ -1,0 +1,65 @@
+<div class="header">
+    <div class="container">
+        <div class="row">
+            <div class="col-xxl-12">
+                <div class="header-content">
+                    <div class="header-left">
+                        <div class="brand-logo">
+                            <a class="mini-logo" href="{{ url_for('dashboard.index') }}">
+                                <img src="{{ url_for('static', filename='images/logoi.png') }}" alt="" width="40">
+                            </a>
+                        </div>
+
+                    </div>
+                    <div class="header-right">
+                        <div class="dark-light-toggle" onclick="themeToggle()">
+                            <span class="dark"><i class="fi fi-rr-eclipse-alt"></i></span>
+                            <span class="light"><i class="fi fi-rr-eclipse-alt"></i></span>
+                        </div>
+                        <div class="dropdown profile_log dropdown">
+                            <div data-bs-toggle="dropdown">
+                                <div class="user icon-menu active"><span><i class="fi fi-rr-user"></i></span></div>
+                            </div>
+                            <div tabindex="-1" role="menu" aria-hidden="true"
+                                class="dropdown-menu dropdown-menu dropdown-menu-end">
+                                <div class="user-email">
+                                    <div class="user">
+                                        <span class="thumb">
+                                            <img class="rounded-full"
+                                                src="{{ url_for('static', filename='images/avatar/user.png') }}" alt="">
+                                        </span>
+                                        <div class="user-info">
+                                            {% if 'username' in session %}
+                                            <h5>{{ session['username'] }}</h5>
+                                            {% endif %}
+                                            {% if 'email' in session %}
+                                            <span>{{ session['email'] }}</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                                <a class="dropdown-item" href="{{ url_for('extras.settings') }}">
+                                    <span><i class="fi fi-rr-settings"></i></span>
+                                    Settings
+                                </a>
+                                <a class="dropdown-item logout" href="{{ url_for('auth.logout') }}">
+                                    <span><i class="fi fi-bs-sign-out-alt"></i></span>
+                                    Logout
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% if error_message %}
+        <div class="row">
+            <div class="alert alert-danger" role="alert" style="margin-top:25px">
+                {{ error_message }}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+</div>

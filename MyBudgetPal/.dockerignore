@@ -1,0 +1,10 @@
+nginx/certbot/conf/accounts/
+nginx/certbot/conf/archive/
+nginx/certbot/conf/live/
+nginx/certbot/conf/renewal/
+nginx/certbot/conf/renewal-hooks/
+certbot/conf/accounts/
+certbot/conf/archive/
+certbot/conf/live/
+certbot/conf/renewal/
+certbot/conf/renewal-hooks/

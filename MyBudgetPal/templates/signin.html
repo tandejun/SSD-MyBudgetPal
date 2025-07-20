@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>MyBudgetPal : Login</title>
+
+    {% include 'common/head.html' %}
+</head>
+
+<body class="dashboard">
+    {% include 'common/preloader.html' %}
+    <div class="authincation">
+        <div class="container">
+            <div class="row justify-content-center align-items-center g-0">
+                <div class="col-xl-8">
+                    <div class="mini-logo text-center my-5">
+                        <a href="{{ url_for('dashboard.index') }}">
+                            <img src="../static/images/logo.png" alt=""
+                                style="display: block; margin-left: auto; margin-right: auto; width: 50%;">
+                        </a>
+                    </div>
+                    <div class="row g-0">
+                        <div class="col-lg-6">
+                            <div class="welcome-content">
+                                <div class="welcome-title">
+                                    <div class="mini-logo">
+                                        <a href="{{ url_for('dashboard.index') }}">
+                                            <img src="../static/images/logo-white.png" alt="" width="30" /></a>
+                                    </div>
+                                    <h3>Welcome to MyBudgetPal</h3>
+                                </div>
+                                <div class="welcome-title">
+                                    <p class="text-white">Manage your finances with ease.</p>
+                                    <p class="text-white">Sign in to access your dashboard and start tracking your
+                                        expenses, income, and savings.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-6">
+                            <div class="auth-form">
+                                <h4>Sign In</h4>
+                                
+                                <!-- Email Verification Alert -->
+                                {% if show_resend_verification %}
+                                <div class="alert alert-warning mb-3" role="alert">
+                                    <h6 class="alert-heading">Email Not Verified</h6>
+                                    <p class="mb-3">Please check your email and click the verification link to activate your account.</p>
+                                    <hr>
+                                    <p class="mb-0">Didn't receive the email?</p>
+                                    <form method="POST" action="{{ url_for('auth.resend_verification') }}" class="d-inline mt-2">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                        <input type="hidden" name="email" value="{{ user_email }}">
+                                        <button type="submit" class="btn btn-sm btn-outline-warning">
+                                            Resend Verification Email
+                                        </button>
+                                    </form>
+                                </div>
+                                {% endif %}
+                                
+                                <!-- Account Banned Alert -->
+                                {% if show_reset_link %}
+                                <div class="alert alert-danger mb-3" role="alert">
+                                    <h6 class="alert-heading">Account Locked</h6>
+                                    <p class="mb-3">Your account has been temporarily locked due to multiple failed login attempts.</p>
+                                    <hr>
+                                    <p class="mb-0">Reset your password to unlock your account:</p>
+                                    <a href="{{ url_for('auth.reset') }}" class="btn btn-sm btn-outline-danger mt-2">
+                                        Reset Password to Unlock Account
+                                    </a>
+                                </div>
+                                {% endif %}
+                                
+                                <form action="{{ url_for('auth.signin') }}" method="POST"
+                                    onsubmit="return refreshRecaptchaToken();">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <div class="row">
+                                        <div class="col-12 mb-3">
+                                            <label class="form-label">Username</label>
+                                            <input name="username" type="text" class="form-control" />
+                                        </div>
+                                        <div class="col-12 mb-3">
+                                            <label class="form-label">Password</label>
+                                            <input name="password" type="password" class="form-control" />
+                                        </div>
+                                        <div class="col-12 text-end"><a href="{{ url_for('auth.reset') }}">Forgot Password?</a></div>
+                                    </div>
+                                    <input type="hidden" name="g-recaptcha-response" id="g-recaptcha-response" />
+                                    <div class="mt-3 d-grid gap-2"><button type="submit"
+                                            class="btn btn-primary me-8 text-white">Sign In</button></div>
+                                </form>
+                                <p class="mt-3 mb-0 undefined">Don't have an account?<a class="text-primary"
+                                        href="{{ url_for('auth.signup') }}"> Sign up</a></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% include 'common/scripts.html' %}
+</body>
+
+</html>

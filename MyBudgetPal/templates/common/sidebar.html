@@ -1,0 +1,41 @@
+<div class="sidebar">
+    <div class="brand-logo">
+        <a class="full-logo" href="{{ url_for('dashboard.index') }}">
+            <img src="{{ url_for('static', filename='images/logoi.png') }}" alt="" width="30">
+        </a>
+    </div>
+    <div class="menu">
+        <ul>
+            <li>
+                <a href="{{ url_for('dashboard.index') }}">
+                    <span><i class="fi fi-rr-dashboard"></i></span>
+                    <span class="nav-text">Home</span>
+                </a>
+            </li>
+            <li>
+                <a href="{{ url_for('receipts.upload_receipt') }}">
+                    <span><i class="fi fi-rr-file-invoice-dollar"></i></span>
+                    <span class="nav-text">Upload Receipts</span>
+                </a>
+            </li>
+            <li>
+                <a href="{{ url_for('categories.categories') }}">
+                    <span><i class="fi fi-rr-apps"></i></span>
+                    <span class="nav-text">Categories</span>
+                </a>
+            </li>
+            <li>
+                <a href="{{ url_for('extras.settings') }}">
+                    <span><i class="fi fi-rs-settings"></i></span>
+                    <span class="nav-text">Settings</span>
+                </a>
+            </li>
+            <li>
+                <a href="{{ url_for('friends.friends') }}">
+                    <span><i class="fi fi-rr-users"></i></span>
+                    <span class="nav-text">Friends</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+</div>

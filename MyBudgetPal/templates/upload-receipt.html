@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>MyBudgetPal : Upload Receipt</title>
+
+    {% include 'common/head.html' %}
+
+</head>
+
+<body class="dashboard">
+    {% if error_message %}
+    <div class="alert alert-danger">
+        {{ error_message }}
+    </div>
+    {% endif %}
+    {% include 'common/preloader.html' %}
+    <div id="main-wrapper">
+        {% include 'common/header.html' %}
+        {% include 'common/sidebar.html' %}
+        <div class="content-body">
+            <div class="verification section-padding">
+                <div class="container h-100">
+                    <div class="row justify-content-center h-100 align-items-center">
+                        <div class="col-xl-5 col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <div class="row">
+                                        <h4 class="card-title">Add Receipt</h4>
+                                        <p>Upload your receipt image for automatic logging of expenses</p>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <form action="{{ url_for('receipts.upload_receipt') }}" method="POST"
+                                        enctype="multipart/form-data">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                        <div class="row">
+                                            <div class="mb-3 col-xl-12">
+                                                <label class="form-label">Upload Receipt Image</label>
+                                                <input type="file" class="form-control" name="receipt_image"
+                                                    accept="image/*" required>
+                                            </div>
+                                            <div class="text-center col-12">
+                                                <button type="button" id="upload-receipt-btn"
+                                                    class="btn btn-success w-100">Upload</button>
+                                                <button type="submit" id="submit-btn" style="display: none;"></button>
+                                            </div>
+                                        </div>
+                                    </form>
+                                    <div id="loading-spinner" class="text-center mt-3" style="display: none;">
+                                        <div class="spinner-border text-success" role="status">
+                                            <span class="visually-hidden">Uploading...</span>
+                                        </div>
+                                        <p class="mt-2">Processing your receipt, please wait...</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% include 'common/footer.html' %}
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const uploadReceiptBtn = document.getElementById('upload-receipt-btn');
+            const submitBtn = document.getElementById('submit-btn');
+            const spinner = document.getElementById('loading-spinner');
+            const fileInput = document.querySelector('input[name="receipt_image"]');
+
+            uploadReceiptBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+
+                // Check if file is selected
+                if (!fileInput.files || fileInput.files.length === 0) {
+                    alert("Please select a receipt image before uploading.");
+                    return;
+                }
+
+                // Show spinner and disable button
+                spinner.style.display = 'block';
+                uploadReceiptBtn.disabled = true;
+
+                // Delay to let DOM update, then submit
+                setTimeout(() => {
+                    submitBtn.click();
+                }, 100);
+            });
+        });
+    </script>
+
+    {% include 'common/scripts.html' %}
+
+</body>
+
+</html>

@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>MyBudgetPal : Home</title>
+
+    {% include 'common/head.html' %}
+</head>
+
+<body class="dashboard">
+    {% include 'common/preloader.html' %}
+    <style>
+        .filter-section {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .filter-group label {
+            font-weight: bold;
+            color: #555;
+            font-size: 0.9em;
+        }
+
+        select,
+        button {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        select {
+            min-width: 120px;
+        }
+
+        #filter-buttons {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            margin-top: 20px;
+        }
+
+        .weekly-exp-top {
+            margin: 2.5% 2.5%;
+        }
+
+        .split-info {
+            background-color: #e3f2fd;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.875rem;
+            color: #1565c0;
+            margin-top: 4px;
+        }
+
+        .split-icon {
+            margin-right: 4px;
+        }
+
+        /* 2FA Notification Styles */
+        .security-notification {
+            border-left: 4px solid #ff9500;
+            background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(255, 149, 0, 0.1);
+        }
+
+        .security-notification .alert-heading {
+            color: #856404;
+            font-weight: 600;
+        }
+
+        .security-notification .btn-warning {
+            background: linear-gradient(135deg, #ff9500 0%, #ff7675 100%);
+            border: none;
+            font-weight: 500;
+            padding: 8px 20px;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+        }
+
+        .security-notification .btn-warning:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 149, 0, 0.3);
+        }
+
+        .security-icon {
+            color: #ff9500;
+            font-size: 2rem;
+        }
+    </style>
+    <div id="main-wrapper">
+        {% include 'common/header.html' %}
+        {% include 'common/sidebar.html' %}
+        <div class="content-body">
+            <!-- Hidden CSRF token for JavaScript use -->
+            <input type="hidden" id="hidden-csrf-token" value="{{ csrf_token() }}">
+            <div class="container">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="page-title">
+                            <div class="row align-items-center justify-content-between">
+                                <div class="col-xl-4">
+                                    <div class="page-title-content">
+                                        <h3>Dashboard</h3>
+                                        <p class="mb-2">Welcome back, {{ username }}</p>
+                                    </div>
+                                </div>
+                                <div class="col-auto">
+                                    <div class="breadcrumbs"><a href="#">Home </a>
+                                        <span><i class="fi fi-rr-angle-small-right"></i></span>
+                                        <a href="#">Dashboard</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2FA Security Notification -->
+                {% if show_2fa_notification %}
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="alert alert-warning alert-dismissible fade show security-notification" role="alert">
+                            <div class="d-flex align-items-center">
+                                <div class="me-3">
+                                    <i class="fi fi-rs-shield-exclamation security-icon"></i>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <h6 class="alert-heading mb-2">
+                                        <i class="fi fi-rs-shield-exclamation me-2"></i>
+                                        Secure Your Account
+                                    </h6>
+                                    <p class="mb-3">{{ notification_message }}</p>
+                                    <div class="d-flex flex-wrap gap-2">
+                                        <a href="{{ notification_action_url }}" class="btn btn-warning">
+                                            <i class="fi fi-rs-shield-check me-2"></i>
+                                            {{ notification_action_text }}
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <div class="row">
+                    <div class="col-xl-3 col-lg-6 col-md-6 col-sm-6">
+                        <div class="stat-widget-1">
+                            <h6>Total Lifetime Expenses</h6>
+                            <h3>$ {{ lifetimeExps.lifetimeExpense }}</h3>
+                        </div>
+                    </div>
+                    <div class="col-xl-3 col-lg-6 col-md-6 col-sm-6">
+                        <div class="stat-widget-1">
+                            <h6>Total Expenses for Today</h6>
+                            <h3>$ {{ dailyMonthlyYearlyExpenses.today_expense }}</h3>
+                            <p>
+                                <span class="{{ 'text-success' if todayChange >= 0 else 'text-danger' }}">
+                                    <i class="{{ 'fi fi-rr-arrow-trend-up' if todayChange >= 0 else 'fi fi-rr-arrow-trend-down' }}"></i>{{
+                                    todayChange }}%
+                                </span>
+                                Yesterday <strong>$ {{ dailyMonthlyYearlyExpenses.yesterday_expense }}</strong>
+                            </p>
+                        </div>
+                    </div>
+                    <div class="col-xl-3 col-lg-6 col-md-6 col-sm-6">
+                        <div class="stat-widget-1">
+                            <h6>Total Monthly Expenses</h6>
+                            <h3>$ {{ dailyMonthlyYearlyExpenses.this_month_expense }}</h3>
+                            <p>
+                                <span class="{{ 'text-success' if monthChange >= 0 else 'text-danger' }}">
+                                    <i class="{{ 'fi fi-rr-arrow-trend-up' if monthChange >= 0 else 'fi fi-rr-arrow-trend-down' }}"></i>{{
+                                    monthChange }}%
+                                </span>
+                                Last month <strong>$ {{ dailyMonthlyYearlyExpenses.last_month_expense }}</strong>
+                            </p>
+                        </div>
+                    </div>
+                    <div class="col-xl-3 col-lg-6 col-md-6 col-sm-6">
+                        <div class="stat-widget-1">
+                            <h6>Total Yearly Expenses</h6>
+                            <h3>$ {{ dailyMonthlyYearlyExpenses.this_year_expense }}</h3>
+                            <p>
+                                <span class="{{ 'text-success' if yearChange >= 0 else 'text-danger' }}">
+                                    <i class="{{ 'fi fi-rr-arrow-trend-up' if yearChange >= 0 else 'fi fi-rr-arrow-trend-down' }}"></i>{{
+                                    yearChange }}%
+                                </span>
+                                Last year <strong>$ {{ dailyMonthlyYearlyExpenses.last_year_expense }}</strong>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-xl-8">
+                        <div class="card">
+                            <div class="card-header">
+                                <h4 class="card-title">Expense History</h4>
+                                <div class="col-auto">
+                                    <div class="breadcrumbs">
+                                        <a style="color:#ffffff;" href="{{ url_for('expenses.add_expense') }}"
+                                            class="btn btn-primary">Add New</a>
+                                        <a style="color:#ffffff;" href="{{ url_for('categories.categories') }}"
+                                            class="btn btn-primary">Manage Categories</a>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="transaction-table">
+                                    <div class="table-responsive">
+                                        <table class="table mb-0 table-responsive-sm">
+                                            <thead>
+                                                <tr>
+                                                    <th>Category</th>
+                                                    <th>Date</th>
+                                                    <th>Description</th>
+                                                    <th>Amount</th>
+                                                    <th>Payment Method</th>
+                                                    <th style="text-align:left">Actions</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% if expenses %}
+                                                {% for expense in expenses %}
+                                                <tr>
+                                                    <td>
+                                                        <span class="table-category-icon">
+                                                            <i class="{{ expense.colour if expense.colour else 'bg-emerald-500' }} fi {{ expense.icon if expense.icon else 'fi-rr-receipt' }}"></i>
+                                                            {{ expense.category_name if expense.category_name else 'Unknown' }}
+                                                        </span>
+                                                    </td>
+                                                    <td>
+                                                        {{ expense.transaction_date.strftime('%d.%m.%Y') }}
+                                                    </td>
+                                                    <td>
+                                                        {{ expense.description }}
+                                                    </td>
+                                                    <td>
+                                                        ${{ "%.2f"|format(expense.amount) }}
+                                                    </td>
+                                                    <td>
+                                                        {{ expense.payment_method.replace('_', ' ') }}
+                                                    </td>
+                                                    <td>
+                                                        <div class="d-flex gap-2">
+                                                            <a href="{{ url_for('expenses.edit_expense', expense_id=expense.expense_id) }}"
+                                                                class="btn btn-primary btn-sm">
+                                                                <i class="fas fa-edit"></i> Edit
+                                                            </a>
+                                                            <button type="button" class="btn btn-danger btn-sm"
+                                                                onclick="confirmDelete('{{ expense.expense_id }}')">
+                                                                <i class="fas fa-trash"></i> Delete
+                                                            </button>
+                                                        </div>
+                                                        {% for split_expense in splitInfoExpenses %}
+                                                        {% if (split_expense.expense_id == expense.expense_id) or
+                                                        (expense.split_from == split_expense.expense_id) %}
+                                                        {% if split_expense.split_with_usernames %}
+                                                        <div class="split-info">
+                                                            Split with: {{ split_expense.split_with_usernames|join(', ') }}
+                                                        </div>
+                                                        {% endif %}
+                                                        {% endif %}
+                                                        {% endfor %}
+                                                    </td>
+                                                </tr>
+                                                {% endfor %}
+                                                {% else %}
+                                                <tr>
+                                                    <td colspan="5" class="text-center">
+                                                        <em>No expenses found</em>
+                                                    </td>
+                                                </tr>
+                                                {% endif %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xxl-4 col-xl-4 col-lg-6 col-md-12 mt-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <h4 class="card-title">Expense Sharing Requests</h4>
+                            </div>
+                            <div class="card-body">
+                                <div class="notification">
+                                    <div class="lists">
+                                        {% if expense_requests %}
+                                        {% for req in expense_requests %}
+                                        <a class="" href="javascript:void(0);">
+                                            <div class="d-flex align-items-center justify-content-between">
+                                                <div class="d-flex align-items-center">
+                                                    <span class="me-3 icon pending"><i class="fi fi-rr-receipt"></i></span>
+                                                    <div>
+                                                        <p class="mb-0">
+                                                            <strong>{{ req.from_username }}</strong> wants to share an expense:
+                                                            <span class="text-primary">${{ req.amount }}</span>
+                                                            <br>
+                                                            <small>{{ req.description }}</small>
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                                <div class="d-flex align-items-center">
+                                                    <form method="POST" action="{{ url_for('expenses.approve_expense_request') }}" class="mb-0 me-2">
+                                                        <input type="hidden" name="request_id" value="{{ req.request_id }}">
+                                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                                        <button type="submit" class="btn btn-success btn-sm" title="Approve">
+                                                            <i class="fi fi-bs-check"></i>
+                                                        </button>
+                                                    </form>
+                                                    <form method="POST" action="{{ url_for('expenses.reject_expense_request') }}" class="mb-0">
+                                                        <input type="hidden" name="request_id" value="{{ req.request_id }}">
+                                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                                        <button type="submit" class="btn btn-danger btn-sm" title="Reject">
+                                                            <i class="fi fi-bs-cross"></i>
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </a>
+                                        {% endfor %}
+                                        {% else %}
+                                        <p class="text-muted">No pending expense requests.</p>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <div class="card-header">
+                                <h4 class="card-title">Categorical Expenses Breakdown</h4>
+                            </div>
+                            <div class="card-body">
+                                <div class="progress-stacked">
+                                    {% for category in categorizedExps %}
+                                    <div class="progress" style="width: {{ category.percentage }}%">
+                                        <div class="progress-bar {{ category.colour if category.colour else 'bg-emerald-500' }}">
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                <div class="list-1 mt-3">
+                                    <ul>
+                                        {% for category in categorizedExps %}
+                                        <li>
+                                            <p class="mb-0">
+                                                <i class="fi fi-ss-circle {{ category.colour.replace('bg-', 'text-') if category.colour else 'text-emerald-500' }}"></i>
+                                                {{ category.category_name }}
+                                            </p>
+                                            <h5 class="mb-0">
+                                                <span>${{ "%.2f"|format(category.grouped_amount) }}</span>
+                                                {{ "%.0f"|format(category.percentage) }}%
+                                            </h5>
+                                        </li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <div class="card-header">
+                                <h4 class="card-title">Payment Method Expenses Breakdown</h4>
+                            </div>
+                            <div class="card-body">
+                                <div class="progress-stacked">
+                                    {% for payment in payExps %}
+                                    <div class="progress" style="width: {{ payment.percentage }}%">
+                                        <div class="progress-bar {{ get_progress_color(loop.index0) }}"></div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                <div class="list-1 mt-3">
+                                    <ul>
+                                        {% for payment in payExps %}
+                                        <li>
+                                            <p class="mb-0">
+                                                <i class="fi fi-ss-circle 
+                                                {% if loop.index0 == 0 %}text-orange-500
+                                                {% elif loop.index0 == 1 %}text-amber-500
+                                                {% elif loop.index0 == 2 %}text-yellow-500
+                                                {% elif loop.index0 == 3 %}text-lime-500
+                                                {% elif loop.index0 == 4 %}text-color-500
+                                                {% elif loop.index0 == 5 %}text-cyan-500
+                                                {% else %}text-stone-500
+                                                {% endif %}"></i>
+                                                {{ payment.PM }}
+                                            </p>
+                                            <h5 class="mb-0">
+                                                <span>${{ "%.2f"|format(payment.grouped_paymethod) }}</span>
+                                            </h5>
+                                        </li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-xl-8">
+                    <div class="card">
+                        <div class="weekly-exp-top">
+                            <h4 class="card-title" id="dynamic-title">Weekly Expenses</h4>
+                            <div class="filter-section">
+                                <div class="filter-group">
+                                    <label for="month-select">Month:</label>
+                                    <select id="month-select">
+                                        <option value="">All Months</option>
+                                    </select>
+                                </div>
+
+                                <div class="filter-group">
+                                    <label for="year-select">Year:</label>
+                                    <select id="year-select">
+                                        <option value="">All Years</option>
+                                    </select>
+                                </div>
+
+                                <button id="filter-buttons" onclick="applyFilter()">Apply Filter</button>
+                                <button id="filter-buttons" class="reset-btn" onclick="resetFilter()">Reset</button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="transaction-table">
+                                <div class="table-responsive">
+                                    <table class="table mb-0 table-responsive-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>Week of</th>
+                                                <th>Expenses</th>
+                                                <th style="text-align:center;">Count</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="expenses-tbody">
+                                            {% if weeklyExps %}
+                                            {% for week in weeklyExps %}
+                                            <tr>
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                                    {{ week.week_display }}</td>
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right font-semibold">
+                                                    ${{ "%.2f"|format(week['Total Weekly Expenses']) }}</td>
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"
+                                                    style="text-align:center;">{{ week.Expense }}</td>
+                                            </tr>
+                                            {% endfor %}
+                                            {% else %}
+                                            <tr>
+                                                <td colspan="5" class="text-center">
+                                                    <em>No expenses found</em>
+                                                </td>
+                                            </tr>
+                                            {% endif %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% include 'common/footer.html' %}
+    </div>
+    {% include 'common/scripts.html' %}
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            initializeFilters();
+            updateDisplay();
+        });
+    </script>
+
+    <script>
+        function confirmDelete(expenseId) {
+            if (confirm('Are you sure you want to delete this expense?')) {
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '/';
+
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'delete_expense_id';
+                input.value = expenseId;
+                form.appendChild(input);
+
+                // Add CSRF token
+                const csrfToken = document.getElementById('hidden-csrf-token').value;
+                const csrfInput = document.createElement('input');
+                csrfInput.type = 'hidden';
+                csrfInput.name = 'csrf_token';
+                csrfInput.value = csrfToken;
+                form.appendChild(csrfInput);
+
+                document.body.appendChild(form);
+                form.submit();
+            }
+        }
+
+        const weeklyExpenses = {{ weeklyExpensesJson | safe }};
+        let filteredExpenses = [...weeklyExpenses];
+
+        const monthMap = {
+            'Jan': 'January', 'Feb': 'February', 'Mar': 'March', 'Apr': 'April',
+            'May': 'May', 'Jun': 'June', 'Jul': 'July', 'Aug': 'August',
+            'Sep': 'September', 'Oct': 'October', 'Nov': 'November', 'Dec': 'December'
+        };
+
+        function initializeFilters() {
+            const months = [...new Set(weeklyExpenses.map(week => week['week_display'].slice(0, 3)))].sort();
+            const years = [...new Set(weeklyExpenses.map(week => week['Year']))].sort().reverse();
+
+            const monthSelect = document.getElementById('month-select');
+            months.forEach(month => {
+                const option = document.createElement('option');
+                option.value = month;
+                option.textContent = monthMap[month] || month;
+                monthSelect.appendChild(option);
+            });
+
+            const yearSelect = document.getElementById('year-select');
+            years.forEach(year => {
+                const option = document.createElement('option');
+                option.value = year;
+                option.textContent = year;
+                yearSelect.appendChild(option);
+            });
+        }
+
+        function applyFilter() {
+            const selectedMonth = document.getElementById('month-select').value;
+            const selectedYear = document.getElementById('year-select').value;
+
+            filteredExpenses = weeklyExpenses.filter(week => {
+                const weekMonth = week['week_display'].split(' ')[0];
+                const weekYear = week['Year'].toString();
+
+                const monthMatch = !selectedMonth || weekMonth === selectedMonth;
+                const yearMatch = !selectedYear || weekYear === selectedYear;
+
+                return monthMatch && yearMatch;
+            });
+
+            updateDisplay();
+        }
+
+        function resetFilter() {
+            document.getElementById('month-select').value = '';
+            document.getElementById('year-select').value = '';
+            filteredExpenses = [...weeklyExpenses];
+            updateDisplay();
+        }
+
+        function updateDisplay() {
+            updateTitle();
+            updateTable();
+        }
+
+        function updateTitle() {
+            const selectedMonth = document.getElementById('month-select').value;
+            const selectedYear = document.getElementById('year-select').value;
+            const titleElement = document.getElementById('dynamic-title');
+
+            if (selectedMonth && selectedYear) {
+                titleElement.textContent = `Weekly Expenses of ${monthMap[selectedMonth]} ${selectedYear}`;
+            } else if (selectedMonth) {
+                titleElement.textContent = `Weekly Expenses of ${monthMap[selectedMonth]}`;
+            } else if (selectedYear) {
+                titleElement.textContent = `Weekly Expenses of ${selectedYear}`;
+            } else {
+                titleElement.textContent = 'Weekly Expenses - All Data';
+            }
+        }
+
+        function updateTable() {
+            const tbody = document.getElementById('expenses-tbody');
+            tbody.innerHTML = '';
+
+            if (filteredExpenses.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="no-data">No data found for the selected filters</td></tr>';
+                return;
+            }
+
+            // Sort by year and week
+            filteredExpenses.sort((a, b) => {
+                if (a.Year !== b.Year) return b.Year - a.Year;
+                return b.Week - a.Week;
+            });
+
+            filteredExpenses.forEach(week => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${week['week_display']}</td>
+                    <td class="amount">$${parseFloat(week['Total Weekly Expenses']).toFixed(2)}</td>
+                    <td style="text-align:center">${week['Expense']}</td>                
+                    `;
+                tbody.appendChild(row);
+            });
+        }
+    </script>
+</body>
+
+</html>

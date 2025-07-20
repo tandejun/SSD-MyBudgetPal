@@ -1,0 +1,44 @@
+name: MyBudgetPal Automated Tests
+
+on: [push, pull_request] # Trigger on push and pull request events
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+
+    - name: Install dependencies
+      run: |
+        cd MyBudgetPal
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install pytest pytest-flask pymysql
+
+    - name: Create .env file for tests
+      run: |
+        cat <<EOT > MyBudgetPal/.env
+        MYSQL_HOST=${{ secrets.REMOTE_DB_HOST }}
+        MYSQL_PORT=${{ secrets.REMOTE_DB_PORT }}
+        MYSQL_USER=${{ secrets.REMOTE_DB_USER }}
+        MYSQL_PASSWORD=${{ secrets.REMOTE_DB_PASSWORD }}
+        MYSQL_DB_NAME=${{ secrets.REMOTE_DB_NAME }}
+        EOT
+
+    - name: Run tests
+      env:
+        MYSQL_HOST: ${{ secrets.REMOTE_DB_HOST }}
+        MYSQL_PORT: ${{ secrets.REMOTE_DB_PORT }}
+        MYSQL_USER: ${{ secrets.REMOTE_DB_USER }}
+        MYSQL_PASSWORD: ${{ secrets.REMOTE_DB_PASSWORD }}
+        MYSQL_DB_NAME: ${{ secrets.REMOTE_DB_NAME }}
+        PYTHONPATH: MyBudgetPal
+      run: |
+        cd MyBudgetPal
+        python -m pytest tests

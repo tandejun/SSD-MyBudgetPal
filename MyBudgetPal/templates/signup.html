@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>MyBudgetPal : Registration</title>
+
+    {% include 'common/head.html' %}
+</head>
+
+<body class="dashboard">
+    {% include 'common/preloader.html' %}
+    <div class="authincation">
+        <div class="container">
+            <div class="row justify-content-center align-items-center g-0">
+                <div class="col-xl-8">
+                    <div class="mini-logo text-center my-5">
+                        <a href="{{ url_for('dashboard.index') }}">
+                            <img src="../static/images/logo.png" alt=""
+                                style="display: block; margin-left: auto; margin-right: auto; width: 50%;">
+                        </a>
+                    </div>
+                    <div class="row g-0">
+                        <div class="col-lg-6">
+                            <div class="welcome-content">
+                                <div class="welcome-title">
+                                    <div class="mini-logo">
+                                        <a href="{{ url_for('dashboard.index') }}">
+                                            <img src="../static/images/logo-white.png" alt="" width="30" /></a>
+                                    </div>
+                                    <h3>Welcome to MyBudgetPal</h3>
+                                </div>
+                                <div class="welcome-title">
+                                    <p class="text-white">Manage your finances with ease.</p>
+                                    <p class="text-white">Sign up to access your dashboard and start <br>tracking your
+                                        expenses, income, and savings.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-6">
+                            <div class="auth-form">
+                                <h4>Sign Up</h4>
+                                <form action="{{ url_for('auth.signup') }}" method="POST"
+                                    onsubmit="return refreshRecaptchaToken();">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <div class="row">
+                                        <div class="col-12 mb-3">
+                                            <label class="form-label">Username</label>
+                                            <input name="username" type="text" class="form-control" />
+                                        </div>
+                                        <div class="col-12 mb-3"><label class="form-label">Email</label>
+                                            <p class="form-label">*Disclaimer: Some email domains might not work (i.e. @sit.singaporetech.edu.sg)</p>
+                                            <input name="email" type="email" class="form-control" />
+                                        </div>
+                                        <div class="col-12 mb-3"><label class="form-label">Password</label>
+                                            <input name="password" type="password" class="form-control" />
+                                        </div>
+                                        <div class="col-12 mb-3"><label class="form-label">Confirm Password</label>
+                                            <input name="confirm_password" type="password" class="form-control" />
+                                        </div>
+                                        <input type="hidden" name="g-recaptcha-response" id="g-recaptcha-response">
+                                        <div class="mt-3 d-grid gap-2"><button type="submit"
+                                                class="btn btn-primary me-8 text-white">Sign Up</button></div>
+                                </form>
+                                <p class="mt-3 mb-0 undefined">Already have an account?<a class="text-primary"
+                                        href="{{ url_for('auth.signin') }}"> Sign In</a></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% include 'common/scripts.html' %}
+</body>
+
+</html>

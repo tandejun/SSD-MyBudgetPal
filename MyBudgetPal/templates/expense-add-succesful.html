@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>MyBudgetPal : Expense Added Successful</title>
+    
+    {% include 'common/head.html' %}
+</head>
+
+<body class="dashboard">
+    {% include 'common/preloader.html' %}
+    <div id="main-wrapper">
+        {% include 'common/header.html' %}
+        {% include 'common/sidebar.html' %}
+        <div class="content-body">
+            <div class="verification section-padding">
+                <div class="container h-100">
+                    <div class="row justify-content-center h-100 align-items-center">
+                        <div class="col-xl-5 col-md-6">
+                            <div class="card">
+                                <div class="card-body identity-content">
+                                    <div>
+                                        <span class="icon"><i class="fi fi-bs-check"></i></span>
+                                        <h4>Expense has been successfully updated.</h4>
+                                        <p>Check your expenses history to find your latest expenses</p>
+                                        <div class="text-center">
+                                            <a href="{{ url_for('dashboard.index') }}" class="btn btn-success pl-5 pr-5">Return to Home</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% include 'common/footer.html' %}
+    </div>
+    {% include 'common/scripts.html' %}
+</body>
+
+</html>

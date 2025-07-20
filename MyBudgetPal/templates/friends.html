@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>MyBudgetPal : Friends</title>
+    
+    {% include 'common/head.html' %}
+</head>
+
+<body class="dashboard">
+    {% include 'common/preloader.html' %}
+    <div id="main-wrapper">
+        {% include 'common/header.html' %}
+        {% include 'common/sidebar.html' %}
+        <div class="content-body">
+            <div class="container">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="page-title">
+                            <div class="row align-items-center justify-content-between">
+                                <div class="col-xl-4">
+                                    <div class="page-title-content">
+                                        <h3>Friends</h3>
+                                        <p class="mb-2">Welcome to MyBudgetPal Friends List Management</p>
+                                    </div>
+                                </div>
+                                <div class="col-auto">
+                                    <div class="breadcrumbs"><a href="#">Home </a>
+                                        <span><i class="fi fi-rr-angle-small-right"></i></span>
+                                        <a href="#">Friends</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-xl-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h4 class="card-title"> Add Friends</h4>
+                            </div>
+                            <div class="card-body">
+                                <div class="search">
+                                    <div class="input-group">
+                                        <input type="text" id="search-input" class="form-control" placeholder="Search Username" autocomplete="off">
+                                        <button id="search-btn" class="btn input-group-text" type="button">
+                                            <i class="fi fi-br-search"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="search-results mt-4" id="search-results">
+                                    <!-- Results will be injected here -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-xl-8 col-lg-8 col-md-12 mb-4" style="padding-right: 20px;">
+                        <div class="card">
+                            <div class="card-header">
+                                <h4 class="card-title">Friends List</h4>
+                            </div>
+                            <div class="card-body">
+                                <div class="notification">
+                                    <div class="lists">
+                                        {% if friends %}
+                                            {% for friend in friends %}
+                                                <a class="" href="javascript:void(0);">
+                                                    <div class="d-flex align-items-center justify-content-between">
+                                                        <div class="d-flex align-items-center">
+                                                            <span class="me-3 icon success"><i class="fi fi-bs-user"></i></span>
+                                                            <div>
+                                                                <p class="mb-0"><strong>{{ friend.username }}</strong></p>
+                                                            </div>
+                                                        </div>
+                                                        <form method="POST" action="{{ url_for('friends.remove_friend') }}" class="mb-0" onsubmit="return confirm('Remove {{ friend.username }} from your friends?');">
+                                                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                                            <input type="hidden" name="friend_id" value="{{ friend.user_id }}">
+                                                            <button type="submit" class="btn btn-outline-danger btn-sm">Remove</button>
+                                                        </form>
+                                                    </div>
+                                                </a>
+                                            {% endfor %}
+                                        {% else %}
+                                            <p class="text-muted mt-3">You have no friends yet.</p>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-4 col-lg-4 col-md-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h4 class="card-title">Friend Requests</h4>
+                            </div>
+                            <div class="card-body">
+                                <div class="notification">
+                                    <div class="lists">
+                                        {% if pending_requests %}
+                                            {% for req in pending_requests %}
+                                                <a class="" href="javascript:void(0);">
+                                                    <div class="d-flex align-items-center justify-content-between">
+                                                        <div class="d-flex align-items-center">
+                                                            <span class="me-3 icon pending"><i class="fi fi-rr-user-add"></i></span>
+                                                            <div>
+                                                                <p class="mb-0"><strong>{{ req.username }}</strong></p>
+                                                            </div>
+                                                        </div>
+                                                        <div class="d-flex align-items-center">
+                                                            <form method="POST" action="{{ url_for('friends.accept_friend_request') }}" class="mb-0 me-2">
+                                                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                                                <input type="hidden" name="request_id" value="{{ req.request_id }}">
+                                                                <button type="submit" class="btn btn-success btn-sm" title="Accept">
+                                                                    <i class="fi fi-bs-check"></i>
+                                                                </button>
+                                                            </form>
+                                                            <form method="POST" action="{{ url_for('friends.decline_friend_request') }}" class="mb-0">
+                                                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                                                <input type="hidden" name="request_id" value="{{ req.request_id }}">
+                                                                <button type="submit" class="btn btn-danger btn-sm" title="Decline">
+                                                                    <i class="fi fi-bs-cross"></i>
+                                                                </button>
+                                                            </form>
+                                                        </div>
+                                                    </div>
+                                                </a>
+                                            {% endfor %}
+                                        {% else %}
+                                            <p class="text-muted mt-3">No pending friend requests.</p>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% include 'common/footer.html' %}
+    </div>
+    {% include 'common/scripts.html' %}
+    <!-- Add this hidden input for CSRF token, outside of any form so JS can access it -->
+    <input type="hidden" id="csrf_token" value="{{ csrf_token() }}">
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const input = document.getElementById('search-input');
+        const resultsDiv = document.getElementById('search-results');
+        const searchBtn = document.getElementById('search-btn');
+        const csrfToken = document.getElementById('csrf_token').value;
+
+        function renderResults(users, query) {
+            if (users.length > 0) {
+                resultsDiv.innerHTML = `
+                    <div class="notification">
+                        <div class="lists">
+                            ${users.map(user => `
+                                <a class="" href="javascript:void(0);">
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <div class="d-flex align-items-center">
+                                            <span class="me-3 icon success"><i class="fi fi-bs-user"></i></span>
+                                            <div>
+                                                <p class="mb-0"><strong>${user.username}</strong></p>
+                                            </div>
+                                        </div>
+                                        ${
+                                            user.status === 'pending'
+                                            ? `<button class="btn btn-warning btn-sm" disabled>Pending</button>`
+                                            : `<button class="btn btn-success btn-sm add-friend-btn" data-username="${user.username}">Add Friend</button>`
+                                        }
+                                    </div>
+                                </a>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+
+                // Attach event listeners to Add Friend buttons
+                document.querySelectorAll('.add-friend-btn').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const username = this.getAttribute('data-username');
+                        fetch('/send-friend-request', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/x-www-form-urlencoded',
+                                'X-Requested-With': 'XMLHttpRequest'
+                            },
+                            body: `friend_username=${encodeURIComponent(username)}&csrf_token=${encodeURIComponent(csrfToken)}`
+                        })
+                        .then(response => {
+                            if (response.ok) {
+                                // Update button to Pending
+                                this.outerHTML = `<button class="btn btn-warning btn-sm" disabled>Pending</button>`;
+                            }
+                        });
+                    });
+                });
+            } else if (query) {
+                resultsDiv.innerHTML = `<p class="text-muted mt-3">No users found matching "${query}".</p>`;
+            } else {
+                resultsDiv.innerHTML = '';
+            }
+        }
+
+        function search(query) {
+            if (!query) {
+                renderResults([], '');
+                return;
+            }
+            fetch(`/api/search-username?query=${encodeURIComponent(query)}`)
+                .then(response => response.json())
+                .then(data => renderResults(data, query));
+        }
+
+        searchBtn.addEventListener('click', function() {
+            search(input.value.trim());
+        });
+
+        input.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                searchBtn.click();
+            }
+        });
+    });
+    </script>
+</body>
+
+</html>
+<style>
+@media (min-width: 992px) {
+    .col-xl-8 { width: 70%; float: left; }
+    .col-xl-4 { width: 30%; float: left; }
+}
+@media (max-width: 991px) {
+    .col-xl-8, .col-xl-4 { width: 100%; float: none; }
+}
+</style>

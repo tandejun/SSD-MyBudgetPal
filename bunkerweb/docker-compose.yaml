@@ -1,0 +1,193 @@
+services:
+  web:
+    build: .
+    expose:
+      - "5000"
+    depends_on:
+      - db
+    env_file:
+      - .env
+    networks:
+      - bw-services
+    volumes:
+      - ./logs:/app/logs
+    cap_drop:
+      - ALL
+    cap_add:
+      - NET_BIND_SERVICE
+    security_opt:
+      - no-new-privileges:true
+
+  # MySQL DB
+  db:
+    image: mysql:8.3
+    restart: always
+    env_file:
+      - .env
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./logs/mysql:/var/log/mysql  
+    ports:
+      - "127.0.0.1:3306:3306"
+    command: >
+      --general-log=1
+      --general-log-file=/var/log/mysql/general.log
+      --slow-query-log=1
+      --slow-query-log-file=/var/log/mysql/slow.log
+      --long-query-time=2
+      --log-queries-not-using-indexes=1
+      --log-error=/var/log/mysql/error.log
+      --log-bin=/var/log/mysql/mysql-bin.log
+      --binlog-format=ROW
+      --log-slave-updates=1
+    networks:
+      - bw-services
+
+  bunkerweb:
+    # This is the name that will be used to identify the instance in the Scheduler.
+    image: bunkerity/bunkerweb:1.6.2
+    ports:
+      - "80:8080/tcp"
+      - "443:8443/tcp"
+      - "443:8443/udp" # For QUIC / HTTP3 support
+    environment:
+      API_WHITELIST_IP: "127.0.0.0/8 10.20.30.0/24"
+      DATABASE_URI: "${BWUI_DATABASE_URI}"
+      USE_REAL_IP: "yes"
+      REAL_IP_FROM: ""
+      REAL_IP_FROM_URLS: "https://www.cloudflare.com/ips-v4/ https://www.cloudflare.com/ips-v6/"
+      REAL_IP_HEADER: "CF-Connecting-IP"
+      REAL_IP_RECURSIVE: "yes"
+    restart: "unless-stopped"
+    networks:
+      - bw-universe
+      - bw-services
+    logging:
+      driver: syslog
+      options:
+        tag: "bunkerweb" # This will be the tag used by syslog-ng to create the log file
+        syslog-address: "udp://10.20.30.254:514"
+
+  bw-scheduler:
+    image: bunkerity/bunkerweb-scheduler:1.6.2
+    environment:
+      BUNKERWEB_INSTANCES: "bunkerweb"
+      DATABASE_URI: "${BWUI_DATABASE_URI}"
+      SERVER_NAME: "100.77.29.109 mybudgetpal.bobbylab.com"
+      MULTISITE: "yes"
+      API_WHITELIST_IP: "127.0.0.0/8 10.20.30.0/24"
+      SERVE_FILES: "no"
+      DISABLE_DEFAULT_SERVER: "yes"
+      USE_CLIENT_CACHE: "yes"
+      USE_GZIP: "yes"
+      USE_REVERSE_PROXY: "yes"
+      USE_REDIS: "yes"
+      REDIS_HOST: "redis"
+      # Domain Specific settings
+      100.77.29.109_USE_TEMPLATE: "ui"
+      100.77.29.109_REVERSE_PROXY_URL: "/${BWUI_REVERSE_PROXY_URL}"
+      100.77.29.109_REVERSE_PROXY_HOST: "http://bw-ui:7000"
+      mybudgetpal.bobbylab.com_REVERSE_PROXY_URL: "/"
+      mybudgetpal.bobbylab.com_REVERSE_PROXY_HOST: "http://web:5000"
+      mybudgetpal.bobbylab.com_USE_CUSTOM_SSL: "yes"
+      mybudgetpal.bobbylab.com_CUSTOM_SSL_CERT_PRIORITY: "file"
+      mybudgetpal.bobbylab.com_CUSTOM_SSL_CERT: "/certs/fullchain.pem"
+      mybudgetpal.bobbylab.com_CUSTOM_SSL_KEY: "/certs/privkey.pem"
+      # Cloudflare
+      USE_REAL_IP: "yes"
+      REAL_IP_FROM: ""
+      REAL_IP_FROM_URLS: "https://www.cloudflare.com/ips-v4/ https://www.cloudflare.com/ips-v6/"
+      REAL_IP_HEADER: "CF-Connecting-IP"
+      REAL_IP_RECURSIVE: "yes"
+    volumes:
+      - bw-storage:/data # This is used to persist the cache and other data like the backups
+      - ./ssl:/certs:ro
+    restart: "unless-stopped"
+    networks:
+      - bw-universe
+      - bw-db
+    logging:
+      driver: syslog
+      options:
+        tag: "bw-scheduler" # This will be the tag used by syslog-ng to create the log file
+        syslog-address: "udp://10.20.30.254:514" # This is the syslog-ng container address
+
+  bw-ui:
+    image: bunkerity/bunkerweb-ui:1.6.2
+    environment:
+      DATABASE_URI: "${BWUI_DATABASE_URI}"
+      ADMIN_USERNAME: "${BWUI_ADMIN_USERNAME}"
+      ADMIN_PASSWORD: "${BWUI_ADMIN_PASSWORD}"
+    restart: "unless-stopped"
+    networks:
+      - bw-universe
+      - bw-db
+    logging:
+      driver: syslog
+      options:
+        tag: "bw-ui" # This will be the tag used by syslog-ng to create the log file
+        syslog-address: "udp://10.20.30.254:514" # This is the syslog-ng container address
+
+  bw-db:
+    image: mariadb:11
+    environment:
+      MYSQL_RANDOM_ROOT_PASSWORD: "yes"
+      MYSQL_DATABASE: "db"
+      MYSQL_USER: "bunkerweb"
+      MYSQL_PASSWORD: "${BWUI_MYSQL_PASSWORD}"
+    volumes:
+      - bw-data:/var/lib/mysql
+    restart: "unless-stopped"
+    networks:
+      - bw-db
+
+  bw-syslog:
+    image: balabit/syslog-ng:4.8.0
+    # image: lscr.io/linuxserver/syslog-ng:4.8.1-r1-ls147 # For aarch64 architecture
+    cap_add:
+      - NET_BIND_SERVICE  # Bind to low ports
+      - NET_BROADCAST  # Send broadcasts
+      - NET_RAW  # Use raw sockets
+      - DAC_READ_SEARCH  # Read files bypassing permissions
+      - DAC_OVERRIDE  # Override file permissions
+      - CHOWN  # Change ownership
+      - SYSLOG  # Write to system logs
+    volumes:
+      - bw-logs:/var/log/bunkerweb # This is the volume used to store the logs
+      - ./syslog-ng.conf:/etc/syslog-ng/syslog-ng.conf # This is the syslog-ng configuration file
+    networks:
+      bw-universe:
+        ipv4_address: 10.20.30.254
+
+  redis: # Redis service for the persistence of reports/bans/stats
+    image: redis:7-alpine
+    command: >
+      redis-server
+      --maxmemory 256mb
+      --maxmemory-policy allkeys-lru
+      --save 60 1000
+      --appendonly yes
+    volumes:
+      - redis-data:/data
+    restart: "unless-stopped"
+    networks:
+      - bw-universe
+
+volumes:
+  bw-data:
+  bw-storage:
+  mysql_data:
+  bw-logs:
+  redis-data:
+
+networks:
+  bw-universe:
+    name: bw-universe
+    ipam:
+      driver: default
+      config:
+        - subnet: 10.20.30.0/24
+  bw-services:
+    name: bw-services
+  bw-db:
+    name: bw-db
