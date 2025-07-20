@@ -32,5 +32,9 @@ function refreshRecaptchaToken() {
         });
     });
 
+    const userInput = "<img src=x onerror=alert(1)>";
+    document.write(userInput); // ❌ triggers method rule
+
+
     return false; // block default submission while waiting for token
 }
