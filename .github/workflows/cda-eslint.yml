@@ -1,6 +1,9 @@
 name: ESLint Code Analysis
 
 on: [push, pull_request]
+permissions:
+  contents: read
+  security-events: write
 
 jobs:
   eslint:
