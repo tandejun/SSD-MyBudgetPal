@@ -1,10 +1,13 @@
-import { defineConfig } from "eslint/config";
+import { defineConfig, globalIgnores } from "eslint/config";
 import js from "@eslint/js";
 import pluginSecurityNode from "eslint-plugin-security-node";
 import noUnsanitized from "eslint-plugin-no-unsanitized";
 import globals from "globals";
 
 export default defineConfig([
+  globalIgnores([
+    "**/vendor/**",
+  ]),
   {
     files: ["**/*.{js,mjs,cjs,jsx}"],
     languageOptions: {
